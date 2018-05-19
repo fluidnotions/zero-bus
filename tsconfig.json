@@ -1,8 +1,7 @@
 {
   "compilerOptions": {
     "outDir": "lib",
-    "outFile": "lib/index.js",
-    "module": "amd",
+    "module": "commonjs",
     "target": "es5",
     "lib": [
       "es6"
@@ -14,7 +13,6 @@
     "moduleResolution": "node"
   },
   "include": [
-    "src/**/*",
-    "tests/**/*",
+    "src/**/*"
   ]
 }

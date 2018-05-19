@@ -2,8 +2,8 @@
   "name": "zero-bus",
   "version": "0.1.0",
   "description": "zero-bus seneca inspired message pattern matching based service bus with zyre.js as transport",
-  "main": "./lib/index.js",
-  "typings": "./lib/index.d.ts",
+  "main": "./lib/main.js",
+  "typings": "./lib/main.d.ts",
   "dependencies": {
     "bloomrun": "^4.1.0",
     "ip": "^1.1.5",
