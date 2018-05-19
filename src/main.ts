@@ -175,7 +175,7 @@ export class ZeroBus {
         } else {
             return new Promise((resolve, reject) => {
                 let message = new Message(uuidv4(), "request", MessageState.PENDING, this.myIdentity, msgArg)
-                console.log("shout msg: ", message)
+                // console.log("shout msg: ", message)
                 this.zyreInstance.shout(DEFAULT_SERVICE_CHANNEL, JSON.stringify(message));
                 this.glueInstance.once(message.msguuid, (msg: Message) => {
                     if (msg) {
@@ -227,7 +227,6 @@ export class ZeroBus {
 
 export enum MessageState {
     ERROR = "error",
-    SUCCESS = "success",
     PENDING = "pending",
     COMPLETE = "complete",
     TIMEOUT = "timeout"
