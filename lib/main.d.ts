@@ -56,7 +56,6 @@ export declare class ZeroBus {
 }
 export declare enum MessageState {
     ERROR = "error",
-    SUCCESS = "success",
     PENDING = "pending",
     COMPLETE = "complete",
     TIMEOUT = "timeout",

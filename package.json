@@ -4,6 +4,9 @@
   "description": "zero-bus seneca inspired message pattern matching based service bus with zyre.js as transport",
   "main": "./lib/main.js",
   "typings": "./lib/main.d.ts",
+  "scripts": {
+    "nets": "node ./lib/tests/get-local-iface-options.js"
+  },
   "dependencies": {
     "bloomrun": "^4.1.0",
     "ip": "^1.1.5",
@@ -13,7 +16,6 @@
     "zyre.js": "^1.2.0"
   },
   "devDependencies": {
-    "@types/zeromq": "^4.6.1",
     "@types/core-js": "^0.9.46",
     "@types/lodash": "^4.14.108",
     "@types/node": "^10.0.8"
