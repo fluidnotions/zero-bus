@@ -45,7 +45,7 @@ export class ZeroBus {
         if (verboseDebug) console.log("peer created on _ifaceData: ", zyre._ifaceData)
         this.zyreInstance.setEncoding('utf8');
         let zyrePeerId = this.zyreInstance.getIdentity()
-        this.myIdentity = { originIp: zyre._ifaceData.address, terminalId: config.headers.terminalId, zyrePeerId: zyrePeerId, name: zyreConfig.name };
+        this.myIdentity = { originIp: zyre._ifaceData.address, terminalId: config.headers.terminalId, zyrePeerId: zyrePeerId, name: config.name };
         if (verboseDebug) {
             let me = this.myIdentity.terminalId;
             this.zyreInstance.on('connect', (id: any, name: any, headers: any) => {
