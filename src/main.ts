@@ -33,7 +33,7 @@ export class ZeroBus {
     myIdentity: MyPeerNode;
     zyreInstance: any;
     glueInstance: Glue;
-    constructor(config: any, public debugLogging: boolean = false) {
+    constructor(config: any, public debug: boolean = false, public verboseDebug: boolean = false) {
         let glue = this.glueInstance = new Glue()
         this.localServiceCatalog = Bloom();
         let zyreConfig = Object.assign({}, ZyreConfigDefaults, config);
@@ -42,11 +42,12 @@ export class ZeroBus {
             zyreConfig.headers = Object.assign({}, ZyreConfigDefaults.headers, config.headers);
         }
         let zyre = this.zyreInstance = new Zyre(zyreConfig);
-        if (debugLogging) console.log("peer created on _ifaceData: ", zyre._ifaceData)
+        // reconnect no broadcast recieved bug console.log("mark")
+        if (verboseDebug) console.log("peer created on _ifaceData: ", zyre._ifaceData)
         this.zyreInstance.setEncoding('utf8');
         let zyrePeerId = this.zyreInstance.getIdentity()
         this.myIdentity = { originIp: zyre._ifaceData.address, terminalId: config.headers.terminalId, zyrePeerId: zyrePeerId, name: zyreConfig.name };
-        if (debugLogging) {
+        if (verboseDebug) {
             let me = this.myIdentity.terminalId;
             this.zyreInstance.on('connect', (id: any, name: any, headers: any) => {
                 console.log("DEBUG:  [", me, "] on connect: ", { id, name, headers })
@@ -67,26 +68,27 @@ export class ZeroBus {
 
         //zyreInstance event handlers go here ...
         this.zyreInstance.on('whisper', (id: string, name: string, message: string) => {
-            if (debugLogging) console.log("##### whisper recieved by ", this.myIdentity, " args: ", { id, name, message })
+            if (debug) console.log("direct msg recieved by: ", this.myIdentity.name)
             let msg: Message = JSON.parse(message);
             //now emit on msguuid so any acts can resolve there promises
             glue.emit(msg.msguuid, msg);
         });
         this.zyreInstance.on('shout', (id: string, name: string, message: string, group: string) => {
-            if (debugLogging) console.log("on shout: group: ", group)
+            if (debug) console.log("broadcast recieved from: ", name)
             if (group === DEFAULT_SERVICE_CHANNEL) {
                 let msg: Message = JSON.parse(message);
-                if (debugLogging) console.log("on channel recieve: parsed message: ", msg)
+                if (verboseDebug) console.log("on channel recieve: parsed message: ", msg)
                 let resMsg = this.localExecAction(msg);
-                if (debugLogging) console.log("on channel recieve: after localExecAction resMsg: ", resMsg)
+                if (verboseDebug) console.log("on channel recieve: after localExecAction resMsg: ", resMsg)
                 //if pattern found locally and exec has given us a response send it directly back to the caller via whisper
                 if (resMsg) {
                     if(msg.myNode.zyrePeerId){
+                        if (debug) console.log("direct msg sent to: ", msg.myNode.name)
                         zyre.whisper(msg.myNode.zyrePeerId, JSON.stringify(resMsg));
                     }
                     
                 } else {
-                    if (debugLogging) console.log("on channel recieve: after localExecAction resMsg: ", resMsg)
+                    if (verboseDebug) console.log("on channel recieve: after localExecAction resMsg: ", resMsg)
                 }
             }
         });
@@ -97,7 +99,7 @@ export class ZeroBus {
 
     getPeerIps(online: boolean = true): string[] {
         let peerIps = values(this.zyreInstance._zyrePeers._peers).filter(p => p._connected).map(p => p._endpoint.split('/')[2].split(':')[0]);
-        if (this.debugLogging) console.log("Peer Ips: ", peerIps)
+        if (this.verboseDebug) console.log("Peer Ips: ", peerIps)
         return peerIps
     }
 
@@ -139,6 +141,7 @@ export class ZeroBus {
      * @memberof ZeroBus
      */
     act(msgArg: any, timeout?: number): Promise<Message> {
+        // reconnect no broadcast recieved bug console.log("mark")
         if (isEmpty(this.zyreInstance.getPeers())) {//when there are no open peers online the channel doesn't -- this is a fast workaround - try direct localExecAction
             console.warn("no other peers online, skipping channel, looking for a local match")
             return new Promise((resolve, reject) => {
@@ -219,6 +222,6 @@ export enum MessageState {
 }
 
 export class Message {
-    constructor(public msguuid: string, public type: 'request' | 'response', public state: string, public myNode: MyPeerNode | null, public content?: any) { }
+    constructor(public msguuid: string, public type: 'request' | 'response', public state: string, public myNode: any, public content?: any) { }
 }
 

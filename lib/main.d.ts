@@ -10,12 +10,13 @@ export interface MyPeerNode {
     name: string;
 }
 export declare class ZeroBus {
-    debugLogging: boolean;
+    debug: boolean;
+    verboseDebug: boolean;
     private localServiceCatalog;
     myIdentity: MyPeerNode;
     zyreInstance: any;
     glueInstance: Glue;
-    constructor(config: any, debugLogging?: boolean);
+    constructor(config: any, debug?: boolean, verboseDebug?: boolean);
     getPeerIps(online?: boolean): string[];
     init(): Promise<ZeroBus>;
     /**
@@ -64,7 +65,7 @@ export declare class Message {
     msguuid: string;
     type: 'request' | 'response';
     state: string;
-    myNode: MyPeerNode | null;
+    myNode: any;
     content: any;
-    constructor(msguuid: string, type: 'request' | 'response', state: string, myNode: MyPeerNode | null, content?: any);
+    constructor(msguuid: string, type: 'request' | 'response', state: string, myNode: any, content?: any);
 }

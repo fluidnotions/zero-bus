@@ -1,12 +1,12 @@
 import { ZeroBus, Message } from '../main';
 
-let b1 = new ZeroBus({ name: "test1", headers: { terminalId: "term1" }, iface: "Wireless Network Connection" }, true);
+let b1 = new ZeroBus({ name: "test1", headers: { terminalId: "term1" }, iface: "Wireless Network Connection" });
 b1.add({
     cmd: 'hello'
 }, (msg: any) => {
     return {
         result: 'hello ' + msg.name,
-        zbInstanceIdentity: b1.myIdentity
+        // zbInstanceIdentity: b1.myIdentity
     }
 })
 //inter coms
@@ -34,7 +34,7 @@ b1.init().then((zb: ZeroBus) => {
             version: "v2",
             name: 'Justin'
         }).then((resp: Message) => {
-            console.log("response message from v2 act ",c,"...", resp)
+            console.log("response message from v2 act ",c,"...", resp.content)
         })
         // clearInterval(i);
     }, to*2)

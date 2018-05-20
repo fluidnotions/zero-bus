@@ -1,6 +1,6 @@
 import { ZeroBus, Message } from '../main';
 
-let b2 = new ZeroBus({ name: "test2", headers: { terminalId: "term2" }, iface: "Wireless Network Connection" }, true);
+let b2 = new ZeroBus({ name: "test2", headers: { terminalId: "term2" }, iface: "Wireless Network Connection" });
 b2.add({
     cmd: 'hello',
     version: "v2"
