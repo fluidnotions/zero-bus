@@ -1,4 +1,4 @@
-import { ZeroBus, Message } from '../src/main';
+import { ZeroBus, Message } from '../main';
 
 let b1 = new ZeroBus({ name: "test1", headers: { terminalId: "term1" }, iface: "Wireless Network Connection" });
 b1.add({
