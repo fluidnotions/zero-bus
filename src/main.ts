@@ -1,6 +1,5 @@
 const Bloom = require('bloomrun');
 const Zyre = require('zyre.js');
-const ip = require('ip');
 const uuidv4 = require('uuid/v4');
 import { EventEmitter } from "events";
 import { isEmpty, values, uniq } from "lodash";
