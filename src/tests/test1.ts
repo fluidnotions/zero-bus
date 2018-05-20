@@ -1,6 +1,6 @@
 import { ZeroBus, Message } from '../main';
 
-let b1 = new ZeroBus({ name: "test1", headers: { terminalId: "term1" }, iface: "Wireless Network Connection" });
+let b1 = new ZeroBus({ name: "test1", headers: { terminalId: "term1" }, iface: "Wireless Network Connection" }, true);
 b1.add({
     cmd: 'hello'
 }, (msg: any) => {
@@ -12,25 +12,19 @@ b1.add({
 //inter coms
 b1.init().then((zb: ZeroBus) => {
     let to = 5000
+    setTimeout(() => {
+     zb.getPeerIps();
+    }, to)
     // setTimeout(() => {
-    //     console.log(" gonna call dummy act now ...")
+    //     console.log(" gonna call dummy v2 now ...")
     //     zb.act({
-    //         cmd: 'goodbye',
-    //         name: 'world'
-    //     }, 2000).then((resp: Message) => {
-    //         console.log("response message from dummy act...", resp)
+    //         cmd: 'hello',
+    //         version: "v2",
+    //         name: 'Justin'
+    //     }).then((resp: Message) => {
+    //         console.log("response message from v2 act...", resp)
     //     })
     // }, to)
-    setTimeout(() => {
-        console.log(" gonna call dummy v2 now ...")
-        zb.act({
-            cmd: 'hello',
-            version: "v2",
-            name: 'Justin'
-        }).then((resp: Message) => {
-            console.log("response message from v2 act...", resp)
-        })
-    }, to)
     let count = 0;
     let i = setInterval(() => {
         let c = count++;

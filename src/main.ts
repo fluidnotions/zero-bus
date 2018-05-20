@@ -15,7 +15,6 @@ const ZyreConfigDefaults = {
     name: undefined,      // Name of the zyre node - required in constructor zyreConfig
     iface: 'eth0',    // Network interface
     headers: {        // Headers will be sent on every new connection
-        ip: undefined, //provided by class
         terminalId: undefined //required in constructor zyreConfig
     },
     evasive: 5000,    // Timeout after which the local node will try to ping a not responding peer
@@ -37,17 +36,16 @@ export class ZeroBus {
     constructor(config: any, public debugLogging: boolean = false) {
         let glue = this.glueInstance = new Glue()
         this.localServiceCatalog = Bloom();
-        let myIp = ip.address();
         let zyreConfig = Object.assign({}, ZyreConfigDefaults, config);
         if (config.headers) {
             //apply defaults to nested 
             zyreConfig.headers = Object.assign({}, ZyreConfigDefaults.headers, config.headers);
         }
-        zyreConfig.headers.ip = myIp;
         let zyre = this.zyreInstance = new Zyre(zyreConfig);
+        if (debugLogging) console.log("peer created on _ifaceData: ", zyre._ifaceData)
         this.zyreInstance.setEncoding('utf8');
         let zyrePeerId = this.zyreInstance.getIdentity()
-        this.myIdentity = { originIp: myIp, terminalId: config.headers.terminalId, zyrePeerId: zyrePeerId, name: zyreConfig.name };
+        this.myIdentity = { originIp: zyre._ifaceData.address, terminalId: config.headers.terminalId, zyrePeerId: zyrePeerId, name: zyreConfig.name };
         if (debugLogging) {
             let me = this.myIdentity.terminalId;
             this.zyreInstance.on('connect', (id: any, name: any, headers: any) => {
@@ -98,28 +96,16 @@ export class ZeroBus {
     }
 
     getPeerIps(online: boolean = true): string[] {
-        //zyre peer:
-        // {   name: 'test2',
-        //     endpoint: 'tcp://192.168.8.103:49153',
-        //     headers: { ip: '192.168.56.1', terminalId: 'term2' },
-        //     groups: [ 'plugin-service-channel' ],
-        //     evasive: false }
-        return uniq(//remove duplicate ips
-            values(this.zyreInstance.getPeers())
-            .filter(p => {
-                return !p.evasive == online
-            }).map(p => p.headers.ip)
-            .concat(this.myIdentity.originIp)//add in self -- seems to be excluded from getPeers()
-        )
+        let peerIps = values(this.zyreInstance._zyrePeers._peers).filter(p => p._connected).map(p => p._endpoint.split('/')[2].split(':')[0]);
+        if (this.debugLogging) console.log("Peer Ips: ", peerIps)
+        return peerIps
     }
 
     init(): Promise<ZeroBus> {
         return this.zyreInstance.start()
             .then(() => {
-
                 this.zyreInstance.join(DEFAULT_SERVICE_CHANNEL);
                 return this;
-
             })
     }
 
