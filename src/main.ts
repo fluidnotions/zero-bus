@@ -97,7 +97,7 @@ export class ZeroBus {
     }
 
     getPeerIps(online: boolean = true): string[] {
-        let peerIps = values(this.zyreInstance._zyrePeers._peers).filter(p => p._connected).map(p => p._endpoint.split('/')[2].split(':')[0]);
+        let peerIps = uniq(values(this.zyreInstance._zyrePeers._peers).filter(p => p._connected).map(p => p._endpoint.split('/')[2].split(':')[0]).concat([this.zyreInstance._ifaceData.address]));
         if (this.verboseDebug) console.log("Peer Ips: ", peerIps)
         return peerIps
     }
