@@ -76,9 +76,9 @@ export class ZeroBus {
             if (debug) console.log("broadcast recieved from: ", name)
             if (group === DEFAULT_SERVICE_CHANNEL) {
                 let msg: Message = JSON.parse(message);
-                if (verboseDebug) console.log("on channel recieve: parsed message: ", msg)
+                if (verboseDebug) console.log("on channel recieve: parsed message: role: ", msg.content.role, ", cmd: ", msg.content.role)
                 let resMsg = this.localExecAction(msg);
-                if (verboseDebug) console.log("on channel recieve: after localExecAction resMsg: ", resMsg)
+                if (verboseDebug) console.log("on channel recieve: after localExecAction resMsg.content: ", resMsg.content)
                 //if pattern found locally and exec has given us a response send it directly back to the caller via whisper
                 if (resMsg) {
                     if(msg.myNode.zyrePeerId){
@@ -87,7 +87,7 @@ export class ZeroBus {
                     }
                     
                 } else {
-                    if (verboseDebug) console.log("on channel recieve: after localExecAction resMsg: ", resMsg)
+                    if (verboseDebug) console.log("on channel recieve: after localExecAction resMsg (assert undefined): ", resMsg)
                 }
             }
         });
@@ -206,7 +206,7 @@ export class ZeroBus {
             }
             return new Message(msg.msguuid, "response", MessageState.COMPLETE, this.myIdentity, res);
         } else {
-            console.warn(msg, " pattern not found in local service catalog: ", this.myIdentity)
+            console.warn("role: ",msg.content.role," ,cmd: ",msg.content.cmd, " pattern not found in local service catalog: ", this.myIdentity)
             return null;
         }
     }
