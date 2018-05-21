@@ -40,6 +40,7 @@ export class ZeroBus {
             //apply defaults to nested 
             zyreConfig.headers = Object.assign({}, ZyreConfigDefaults.headers, config.headers);
         }
+        if (debug) console.log("zyreConfig: ", zyreConfig, ", provided config: ", config)
         let zyre = this.zyreInstance = new Zyre(zyreConfig);
         // reconnect no broadcast recieved bug console.log("mark")
         if (verboseDebug) console.log("peer created on _ifaceData: ", zyre._ifaceData)
