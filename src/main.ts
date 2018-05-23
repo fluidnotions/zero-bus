@@ -17,7 +17,7 @@ const ZyreConfigDefaults = {
         terminalId: undefined //required in constructor zyreConfig
     },
     evasive: 5000,    // Timeout after which the local node will try to ping a not responding peer
-    expired:  2147483647, //maximum positive value for a 32-bit signed binary integer  // Timeout after which a not responding peer gets disconnected
+    expired: 2147483647, //maximum positive value for a 32-bit signed binary integer  // Timeout after which a not responding peer gets disconnected
     port: 49152,      // Port for incoming messages, will be incremented if already in use
     bport: 5670,      // Discovery beacon broadcast port
     binterval: 1000,  // Discovery beacon broadcast interval
@@ -32,6 +32,7 @@ export class ZeroBus {
     myIdentity: MyPeerNode;
     zyreInstance: any;
     glueInstance: Glue;
+    startSuccess = true;
     constructor(config: any, public debug: boolean = false, public verboseDebug: boolean = false) {
         let glue = this.glueInstance = new Glue()
         this.localServiceCatalog = Bloom();
@@ -41,7 +42,14 @@ export class ZeroBus {
             zyreConfig.headers = Object.assign({}, ZyreConfigDefaults.headers, config.headers);
         }
         if (debug) console.log("zyreConfig: ", zyreConfig, ", provided config: ", config)
-        let zyre = this.zyreInstance = new Zyre(zyreConfig);
+        let zyre;
+        try {
+            zyre = this.zyreInstance = new Zyre(zyreConfig);
+        } catch (err) {
+            this.startSuccess = false;
+            console.error(err.message)
+            return;
+        }
         // reconnect no broadcast recieved bug console.log("mark")
         if (verboseDebug) console.log("peer created on _ifaceData: ", zyre._ifaceData)
         this.zyreInstance.setEncoding('utf8');
@@ -81,14 +89,14 @@ export class ZeroBus {
                 let resMsg = this.localExecAction(msg);
                 //if pattern found locally and exec has given us a response send it directly back to the caller via whisper
                 if (resMsg) {
-                    if(msg.myNode.zyrePeerId){
+                    if (msg.myNode.zyrePeerId) {
                         if (verboseDebug) console.log("on channel recieve: after localExecAction resMsg.content: ", resMsg.content)
                         if (debug) console.log("direct msg sent to: ", msg.myNode.name)
                         zyre.whisper(msg.myNode.zyrePeerId, JSON.stringify(resMsg));
-                    }else(
+                    } else (
                         console.error("msg.myNode.zyrePeerId is undefined")
                     )
-                    
+
                 } else {
                     if (verboseDebug) console.log("on channel recieve: after localExecAction resMsg (assert undefined): ", resMsg)
                 }
@@ -100,13 +108,15 @@ export class ZeroBus {
     }
 
     getPeerIps(online: boolean = true): string[] {
+        if (this.startSuccess == false) return [];
         let peerIps = uniq(values(this.zyreInstance._zyrePeers._peers).filter(p => p._connected).map(p => p._endpoint.split('/')[2].split(':')[0]).concat([this.zyreInstance._ifaceData.address]));
         if (this.verboseDebug) console.log("Peer Ips: ", peerIps)
         return peerIps
     }
 
     init(): Promise<ZeroBus> {
-        return this.zyreInstance.start()
+        if (this.startSuccess == false) return Promise.resolve(this);
+        else return this.zyreInstance.start()
             .then(() => {
                 this.zyreInstance.join(DEFAULT_SERVICE_CHANNEL);
                 return this;
@@ -143,6 +153,7 @@ export class ZeroBus {
      * @memberof ZeroBus
      */
     act(msgArg: any, timeout?: number): Promise<Message> {
+        if (this.startSuccess == false) throw new Error("instance start failed unable to call act")
         // reconnect no broadcast recieved bug console.log("mark")
         if (isEmpty(this.zyreInstance.getPeers())) {//when there are no open peers online the channel doesn't -- this is a fast workaround - try direct localExecAction
             console.warn("no other peers online, skipping channel, looking for a local match")
@@ -158,7 +169,7 @@ export class ZeroBus {
                 //if we never get a response back in a sec timeout
                 if (timeout) {
                     setTimeout(() => {
-                        console.warn('Timed out in ' + timeout + 'ms. [message: ',message,"]")
+                        console.warn('Timed out in ' + timeout + 'ms. [message: ', message, "]")
                         resolve(new Message(message.msguuid, "request", MessageState.TIMEOUT, null));
                     }, timeout)
                 }
@@ -209,7 +220,7 @@ export class ZeroBus {
             }
             return new Message(msg.msguuid, "response", MessageState.COMPLETE, this.myIdentity, res);
         } else {
-            console.warn("role: ",msg.content.role," ,cmd: ",msg.content.cmd, " pattern not found in local service catalog: ", this.myIdentity)
+            console.warn("role: ", msg.content.role, " ,cmd: ", msg.content.cmd, " pattern not found in local service catalog: ", this.myIdentity)
             return null;
         }
     }

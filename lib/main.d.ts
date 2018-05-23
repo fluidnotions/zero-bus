@@ -16,6 +16,7 @@ export declare class ZeroBus {
     myIdentity: MyPeerNode;
     zyreInstance: any;
     glueInstance: Glue;
+    startSuccess: boolean;
     constructor(config: any, debug?: boolean, verboseDebug?: boolean);
     getPeerIps(online?: boolean): string[];
     init(): Promise<ZeroBus>;
