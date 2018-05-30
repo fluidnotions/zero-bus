@@ -4,7 +4,14 @@ export declare class ZeroBus {
     actPromise: (msgArg: any) => Promise<any>;
     private constructor();
     static instance(config: ZbConfig): Promise<ZeroBus>;
-    add(msgUsedAsPattern: any, func: (msg: any, done: DoneFunc) => any): void;
+    /**    *
+ 
+     *
+     * @param {*} msgUsedAsPattern
+     * @param {(msg: any, done: DoneFunc) => any} [cbFunc] Omitting the callback makes a message asynchronous.
+     * @memberof ZeroBus
+     */
+    add(msgUsedAsPattern: any, cbFunc?: (msg: any, done: DoneFunc) => any): void;
     act(msgArg: any): Promise<any>;
     getPeerIps(): Promise<string[]>;
 }
@@ -26,6 +33,9 @@ export interface ZbConfig {
     port?: number;
     bport?: number;
     binterval?: number;
-    testing?: boolean;
-    repl?: number;
+    debug: {
+        ztrans?: boolean;
+        repl?: number;
+        print?: boolean;
+    };
 }

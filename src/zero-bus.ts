@@ -14,8 +14,6 @@ export class ZeroBus {
             let seneca = Seneca({
                 tag: config.name
             })
-                .test('print')
-                .use('seneca-repl', { port: 0 })
                 .use(ztrans, {
                     zyre: {
                         ...config
@@ -23,8 +21,9 @@ export class ZeroBus {
                 })
                 .client({ type: 'zyre' })
                 .listen({ type: 'zyre' })
-            if (config.repl) {
-                seneca.use('seneca-repl', { port: config.repl })
+            if (config.debug) {
+                if (config.debug.repl !== undefined) seneca.use('seneca-repl', { port: config.debug.repl })
+                if (config.debug.print) seneca.test('print')
             }
             seneca.ready(function () {
                 resolve(new ZeroBus(config, this));
@@ -32,8 +31,15 @@ export class ZeroBus {
         })
     }
 
-    add(msgUsedAsPattern: any, func: (msg: any, done: DoneFunc) => any): void {
-        this.seneca.add(msgUsedAsPattern, func);
+    /**    * 
+ 
+     * 
+     * @param {*} msgUsedAsPattern 
+     * @param {(msg: any, done: DoneFunc) => any} [cbFunc] Omitting the callback makes a message asynchronous.
+     * @memberof ZeroBus
+     */
+    add(msgUsedAsPattern: any, cbFunc?: (msg: any, done: DoneFunc) => any): void {
+        this.seneca.add(msgUsedAsPattern, cbFunc);
     }
 
     act(msgArg: any): Promise<any> {
@@ -41,7 +47,7 @@ export class ZeroBus {
     }
 
     getPeerIps(): Promise<string[]> {
-        return this.act({ role: 'transport', type: 'zyre', cmd: 'getPeerIps', })
+        return this.act({ role: 'transport', type: 'zyre', cmd: 'getPeerIps'})
             .then((result) => {
                 return result.peerIps;
             }).catch(function (err) {
@@ -69,8 +75,11 @@ export interface ZbConfig {
     expired?: number; //maximum positive value for a 32-bit signed binary integer  // Timeout after which a not responding peer gets disconnected
     port?: number;      // Port for incoming messages; will be incremented if already in use
     bport?: number;      // Discovery beacon broadcast port
-    binterval?: number;  // Discovery beacon broadcast interval
-    testing?: boolean; //verbose zyre.js logging
-    repl?: number //repl port zero is free port chosen by OS
+    binterval?: number; // Discovery beacon broadcast interval
+    debug: {
+        ztrans?: boolean; //verbose zyre/senca transport logging
+        repl?: number //repl port zero is free port chosen by OS,
+        print?: boolean //pretty print seneca logging to console
+    }
 
 }
