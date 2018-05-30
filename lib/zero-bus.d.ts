@@ -1,6 +1,6 @@
 export declare class ZeroBus {
     private config;
-    private seneca;
+    seneca: any;
     actPromise: (msgArg: any) => Promise<any>;
     private constructor();
     static instance(config: ZbConfig): Promise<ZeroBus>;

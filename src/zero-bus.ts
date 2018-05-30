@@ -5,7 +5,7 @@ const Promise = require('bluebird');
 export class ZeroBus {
 
     actPromise: (msgArg: any) => Promise<any>;
-    private constructor(private config: ZbConfig, private seneca: any) {
+    private constructor(private config: ZbConfig, public seneca: any) {
         this.actPromise = Promise.promisify(this.seneca.act, { context: this.seneca });
     }
 
