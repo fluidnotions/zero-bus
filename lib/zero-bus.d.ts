@@ -3,6 +3,36 @@ export declare class ZeroBus {
     seneca: any;
     actPromise: (msgArg: any) => Promise<any>;
     private constructor();
+    /**
+     * quick form to be used with plugin node command start
+     *
+     * @static
+     * @param {{ name: string, terminalId: string, iface: string }} args
+     * @param {{
+     *         ztrans?: boolean; //verbose zyre/senca transport logging
+     *         repl?: number //repl port zero is free port chosen by OS,
+     *         print?: boolean //pretty print seneca logging to console
+     *     }} [debug]
+     * @returns {Promise<ZeroBus>}
+     * @memberof ZeroBus
+     */
+    static default(args: {
+        name: string;
+        terminalId: string;
+        iface: string;
+    }, debug?: {
+        ztrans?: boolean;
+        repl?: number;
+        print?: boolean;
+    }): Promise<ZeroBus>;
+    /**
+     *
+     *
+     * @static
+     * @param {ZbConfig} config
+     * @returns {Promise<ZeroBus>}
+     * @memberof ZeroBus
+     */
     static instance(config: ZbConfig): Promise<ZeroBus>;
     /**
      *  You must always call the done: DoneFunc function, at the end of your cbFunc implementation,
@@ -41,7 +71,7 @@ export interface ZbConfig {
     port?: number;
     bport?: number;
     binterval?: number;
-    debug: {
+    debug?: {
         ztrans?: boolean;
         repl?: number;
         print?: boolean;

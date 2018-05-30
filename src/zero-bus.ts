@@ -1,6 +1,7 @@
 const ztrans = require('seneca-zyre-transport')
 const Seneca = require('seneca')
 const Promise = require('bluebird');
+import * as _ from "lodash";
 
 export class ZeroBus {
 
@@ -9,6 +10,45 @@ export class ZeroBus {
         this.actPromise = Promise.promisify(this.seneca.act, { context: this.seneca });
     }
 
+    /**
+     * quick form to be used with plugin node command start
+     * 
+     * @static
+     * @param {{ name: string, terminalId: string, iface: string }} args 
+     * @param {{
+     *         ztrans?: boolean; //verbose zyre/senca transport logging
+     *         repl?: number //repl port zero is free port chosen by OS,
+     *         print?: boolean //pretty print seneca logging to console
+     *     }} [debug] 
+     * @returns {Promise<ZeroBus>} 
+     * @memberof ZeroBus
+     */
+    static default(args: { name: string, terminalId: string, iface: string }, debug?: {
+        ztrans?: boolean; //verbose zyre/senca transport logging
+        repl?: number //repl port zero is free port chosen by OS,
+        print?: boolean //pretty print seneca logging to console
+    }): Promise<ZeroBus> {
+        let config: ZbConfig = {
+            name: args.name,
+            headers: {
+                terminalId: args.terminalId
+            },
+            iface: args.iface
+        }
+        if(debug){
+            config.debug = debug  
+        }
+        return ZeroBus.instance(config);
+    }
+
+    /**
+     * 
+     * 
+     * @static
+     * @param {ZbConfig} config 
+     * @returns {Promise<ZeroBus>} 
+     * @memberof ZeroBus
+     */
     static instance(config: ZbConfig): Promise<ZeroBus> {
         return new Promise((resolve) => {
             let seneca = Seneca({
@@ -42,7 +82,7 @@ export class ZeroBus {
     add(msgUsedAsPattern: any, cbFunc: (msg: any, done: DoneFunc) => any): void {
         this.seneca.add(msgUsedAsPattern, cbFunc);
     }
-    
+
     /**
      * perform an action 
      * 
@@ -84,7 +124,7 @@ export interface ZbConfig {
     port?: number;      // Port for incoming messages; will be incremented if already in use
     bport?: number;      // Discovery beacon broadcast port
     binterval?: number; // Discovery beacon broadcast interval
-    debug: {
+    debug?: {
         ztrans?: boolean; //verbose zyre/senca transport logging
         repl?: number //repl port zero is free port chosen by OS,
         print?: boolean //pretty print seneca logging to console
