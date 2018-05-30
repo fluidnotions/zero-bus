@@ -31,23 +31,31 @@ export class ZeroBus {
         })
     }
 
-    /**    * 
- 
+    /**
+     *  You must always call the done: DoneFunc function, at the end of your cbFunc implementation, 
+     *  even when there is no response data, as this lets Seneca know that the action is complete.
      * 
-     * @param {*} msgUsedAsPattern 
-     * @param {(msg: any, done: DoneFunc) => any} [cbFunc] Omitting the callback makes a message asynchronous.
+     * @param {*} msgUsedAsPattern jsonic can be used, the order of key/values seems to be important, pattern match seem a little iffy, be sure to test
+     * @param {(msg: any, done: DoneFunc) => any} cbFunc 
      * @memberof ZeroBus
      */
-    add(msgUsedAsPattern: any, cbFunc?: (msg: any, done: DoneFunc) => any): void {
+    add(msgUsedAsPattern: any, cbFunc: (msg: any, done: DoneFunc) => any): void {
         this.seneca.add(msgUsedAsPattern, cbFunc);
     }
-
+    
+    /**
+     * perform an action 
+     * 
+     * @param {*} msgArg 
+     * @returns {Promise<any>} 
+     * @memberof ZeroBus
+     */
     act(msgArg: any): Promise<any> {
         return this.actPromise(msgArg).catch((err) => console.error("act failed: ", err))
     }
 
     getPeerIps(): Promise<string[]> {
-        return this.act({ role: 'transport', type: 'zyre', cmd: 'getPeerIps'})
+        return this.act({ role: 'transport', type: 'zyre', cmd: 'getPeerIps' })
             .then((result) => {
                 return result.peerIps;
             }).catch(function (err) {
