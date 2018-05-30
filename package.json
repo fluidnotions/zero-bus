@@ -5,7 +5,7 @@
   "main": "./lib/zero-bus.js",
   "typings": "./lib/zero-bus.d.ts",
   "scripts": {
-    "nets": "node ./lib/tests/get-local-iface-options.js",
+    "nets": "node ./lib/tests/print-local-iface-options.js",
     "repl": "rlwrap telnet 127.0.0.1 <port>",
     "test:t1": "node ./lib/tests/test1.js",
     "test:t2": "node ./lib/tests/test2.js",
