@@ -1,6 +1,6 @@
 {
   "name": "zer0-bus",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "thin typescript wrapper around seneca using seneca-zyre-transport, zero config inter-process/p2p service bus",
   "main": "./lib/zero-bus.js",
   "typings": "./lib/zero-bus.d.ts",
@@ -17,10 +17,16 @@
     "seneca-zyre-transport": "^1.0.0"
   },
   "devDependencies": {
-    "@types/core-js": "^0.9.46",
-    "@types/lodash": "^4.14.108",
-    "@types/node": "^10.0.8"
+    "@types/core-js": "^0.9.46"
   },
+  "keywords": [
+    "seneca",
+    "zyre.js",
+    "zeromq",
+    "p2p",
+    "zero-configuration",
+    "service-bus"
+  ],
   "author": "@gaap",
   "license": "ISC",
   "repository": {
