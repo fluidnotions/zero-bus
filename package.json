@@ -1,18 +1,20 @@
 {
   "name": "zero-bus",
   "version": "0.1.0",
-  "description": "zero-bus seneca inspired message pattern matching based service bus with zyre.js as transport",
-  "main": "./lib/main.js",
-  "typings": "./lib/main.d.ts",
+  "description": "thin typescript wrapper around seneca using seneca-zyre-transport, zero config inter-process/p2p service bus",
+  "main": "./lib/zero-bus.js",
+  "typings": "./lib/zero-bus.d.ts",
   "scripts": {
-    "nets": "node ./lib/tests/get-local-iface-options.js"
+    "nets": "node ./lib/tests/get-local-iface-options.js",
+    "test:t1": "node ./lib/tests/test1.js",
+    "test:t2": "node ./lib/tests/test2.js",
+    "watch": "tsc --watch"
   },
   "dependencies": {
-    "bloomrun": "^4.1.0",
+    "bluebird": "^3.5.1",
     "lodash": "^4.17.10",
-    "ts-node": "^6.0.2",
-    "uuid": "^3.2.1",
-    "zyre.js": "^1.2.0"
+    "seneca": "^3.6.0",
+    "seneca-zyre-transport": "^1.0.0"
   },
   "devDependencies": {
     "@types/core-js": "^0.9.46",
