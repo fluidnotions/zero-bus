@@ -1,23 +1,27 @@
 {
   "name": "zer0-bus",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "thin typescript wrapper around seneca using seneca-zyre-transport, zero config inter-process/p2p service bus",
   "main": "./lib/zero-bus.js",
   "typings": "./lib/zero-bus.d.ts",
   "scripts": {
     "nets": "node ./lib/tests/get-local-iface-options.js",
+    "repl": "rlwrap telnet 127.0.0.1 <port>",
     "test:t1": "node ./lib/tests/test1.js",
     "test:t2": "node ./lib/tests/test2.js",
-    "watch": "tsc --watch"
+    "w": "tsc --watch"
   },
   "dependencies": {
     "bluebird": "^3.5.1",
     "lodash": "^4.17.10",
     "seneca": "^3.6.0",
+    "seneca-repl": "^1.2.0",
     "seneca-zyre-transport": "^1.0.0"
   },
   "devDependencies": {
-    "@types/core-js": "^0.9.46"
+    "@types/core-js": "^0.9.46",
+    "@types/lodash": "^4.14.108",
+    "@types/node": "^10.0.8"
   },
   "keywords": [
     "seneca",
@@ -27,7 +31,7 @@
     "zero-configuration",
     "service-bus"
   ],
-  "author": "@gaap",
+  "author": "Justin Robinson",
   "license": "ISC",
   "repository": {
     "type": "git",

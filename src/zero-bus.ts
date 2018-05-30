@@ -11,10 +11,11 @@ export class ZeroBus {
 
     static instance(config: ZbConfig): Promise<ZeroBus> {
         return new Promise((resolve) => {
-            Seneca({
+            let seneca = Seneca({
                 tag: config.name
             })
                 .test('print')
+                .use('seneca-repl', { port: 0 })
                 .use(ztrans, {
                     zyre: {
                         ...config
@@ -22,9 +23,12 @@ export class ZeroBus {
                 })
                 .client({ type: 'zyre' })
                 .listen({ type: 'zyre' })
-                .ready(function () {
-                    resolve(new ZeroBus(config, this));
-                })
+            if (config.repl) {
+                seneca.use('seneca-repl', { port: config.repl })
+            }
+            seneca.ready(function () {
+                resolve(new ZeroBus(config, this));
+            })
         })
     }
 
@@ -66,6 +70,7 @@ export interface ZbConfig {
     port?: number;      // Port for incoming messages; will be incremented if already in use
     bport?: number;      // Discovery beacon broadcast port
     binterval?: number;  // Discovery beacon broadcast interval
-    testing?: boolean;
+    testing?: boolean; //verbose zyre.js logging
+    repl?: number //repl port zero is free port chosen by OS
 
 }

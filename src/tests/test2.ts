@@ -1,11 +1,11 @@
 import { ZeroBus, DoneFunc, } from '../zero-bus';
 
-let terminalConfig = { name: "test2", headers: { terminalId: "term2" }, iface: "Wireless Network Connection", testing: true }
+let terminalConfig = { name: "test2", headers: { terminalId: "term2" }, iface: "Wireless Network Connection", testing: false, repl: 0 }
 ZeroBus.instance(terminalConfig)
     .then((zb: ZeroBus) => {
         zb.add({
-            cmd: 'hello',
-            version: "v2"
+            version: "v2",
+            cmd: 'hello'
         }, (msg: any, done: DoneFunc) => {
             done(null, {
                 result: 'hello (v2) ' + msg.name,

@@ -27,4 +27,5 @@ export interface ZbConfig {
     bport?: number;
     binterval?: number;
     testing?: boolean;
+    repl?: number;
 }
