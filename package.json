@@ -1,5 +1,5 @@
 {
-  "name": "zero-bus",
+  "name": "zer0-bus",
   "version": "0.2.0",
   "description": "thin typescript wrapper around seneca using seneca-zyre-transport, zero config inter-process/p2p service bus",
   "main": "./lib/zero-bus.js",
