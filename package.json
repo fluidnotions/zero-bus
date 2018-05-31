@@ -14,9 +14,11 @@
   "dependencies": {
     "bluebird": "^3.5.1",
     "lodash": "^4.17.10",
+    "rxjs": "^6.2.0",
+    "rxjs-compat": "^6.2.0",
     "seneca": "^3.6.0",
     "seneca-repl": "^1.2.0",
-    "seneca-zyre-transport": "^1.0.2"
+    "seneca-zyre-transport": "^1.0.4"
   },
   "devDependencies": {
     "@types/core-js": "^0.9.46",
