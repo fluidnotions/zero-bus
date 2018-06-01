@@ -97,6 +97,8 @@ export declare class ZeroBus {
      * we then know how many messages should be in the stream cause we know how many peers
      * have that pattern
      *
+     * FIXME: buggy pattern is not getting matched
+     *
      * @param {*} pattern
      * @returns {Observable<string[]>}
      * @memberof ZeroBus
