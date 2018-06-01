@@ -9,16 +9,19 @@
     "repl": "rlwrap telnet 127.0.0.1 <port>",
     "test:t1": "node ./lib/tests/test1.js",
     "test:t2": "node ./lib/tests/test2.js",
+    "test:t3": "node ./lib/tests/test3.js",
     "w": "tsc --watch"
   },
   "dependencies": {
     "bluebird": "^3.5.1",
+    "jsonic": "^0.3.0",
     "lodash": "^4.17.10",
+    "patrun": "^1.0.0",
     "rxjs": "^6.2.0",
     "rxjs-compat": "^6.2.0",
     "seneca": "^3.6.0",
     "seneca-repl": "^1.2.0",
-    "seneca-zyre-transport": "^1.0.4"
+    "seneca-zyre-transport": "^1.0.6"
   },
   "devDependencies": {
     "@types/core-js": "^0.9.46",

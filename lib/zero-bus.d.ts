@@ -50,7 +50,24 @@ export declare class ZeroBus {
      * @returns {Observable<any>} the response msg(s) if the msg contains observed$: true stream remains open else it is completed
      * @memberof ZeroBus
      */
-    act(msgArg: any): Observable<any>;
+    act(msgArg: any, take?: number): Observable<any>;
+    /**
+     * in situations where actor functions respond with observed$:true
+     * we can use findPeersWithPattern(pat) to find out how many responses
+     * to expect and can aggregate the reults and the complete the observable
+     *
+     * @param {*} msgArg
+     * @returns {Observable<any[]>}
+     * @memberof ZeroBus
+     */
+    observeActAggregate(msgArg: any): Observable<any[]>;
+    /**
+     * filters getPeerEndpoints result removing ports and duplicates
+     *
+     * @returns {Observable<string[]>}
+     * @memberof ZeroBus
+     */
+    getPeerIps(): Observable<string[]>;
     /**
      * contains duplicates, since we are likely to have local peer process but there ports are included,
      * we need the dups to get the number of peers so we can take that number from the
@@ -60,16 +77,36 @@ export declare class ZeroBus {
      */
     getPeerEndpoints(): Observable<string[]>;
     /**
+     * get latest patterns collected from all connected peers, these can be process or network peers
      *
-     *
-     * @param {ZbConfig} config
-     * @param {number} takePeers will complete the observable after we have the responses we want
      * @returns {Observable<any>}
      * @memberof ZeroBus
      */
-    getPeerPatterns(takePeers: number): Observable<any>;
+    getPeerPatterns(): Observable<Dictionary<any[]>>;
+    /**
+     * build a map of patrun instances for each peer containing that patterns
+     * collected from all the peers
+     *
+     * @returns {Observable<Dictionary<any[]>>}
+     * @memberof ZeroBus
+     */
+    getPeerPatrunMap(): Observable<Dictionary<any[]>>;
+    /**
+     * returns a list of zyre peer ids for thoes peer instance that have a match for the pattern
+     * this is useful in cases such as where actor functions respond with observed$: true
+     * we then know how many messages should be in the stream cause we know how many peers
+     * have that pattern
+     *
+     * @param {*} pattern
+     * @returns {Observable<string[]>}
+     * @memberof ZeroBus
+     */
+    findPeersWithPattern(pattern: any): Observable<string[]>;
 }
 export declare type DoneFunc = (error: any, responseMsg: any) => void;
+export declare abstract class Dictionary<T> {
+    [id: string]: T;
+}
 /**
  * passed into seneca-zyre-transport where deafults are set for optional fields
  *

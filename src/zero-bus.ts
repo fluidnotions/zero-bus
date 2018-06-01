@@ -1,10 +1,15 @@
 const ztrans = require('seneca-zyre-transport')
 const Seneca = require('seneca')
 const Promise = require('bluebird');
+const Patrun = require('patrun');
+const Jsonic = require('jsonic');
 import { Observable } from 'rxjs';
-import { map, flatMap, take } from 'rxjs/operators';
+import { map, flatMap, take, bufferCount } from 'rxjs/operators';
 import * as _ from "lodash";
+import { clean } from './util';
 
+
+const debug = true;
 export class ZeroBus {
 
     private constructor(private config: ZbConfig, public seneca: any) {
@@ -66,26 +71,11 @@ export class ZeroBus {
                 if (config.debug.print) seneca.test('print')
             }
             seneca.ready(function () {
-                //add getPeerPatterns to self so we can get patterns from all peers --it can't be def in transport, 
-                //case then when we call act the local will get hit. But we can create a seperate one call client
-                this.add({ role: 'p2p', type: 'zyre', cmd: 'getPeerPatterns', }, get_peer_patterns);
-                function get_peer_patterns(msg, done) {
-                    let seneca = this
-                    //remove role:transport and role:seneca
-                    let patterns = seneca.list()//.filter(p => !p.role || (p.role !== 'transport' && p.role !== 'seneca'))
-                    let id = seneca.id;
-                    console.log("get_peer_patterns: self Id: ", id, " patterns(no filtered): ", patterns)
-                    done(null, {
-                        id: id,
-                        patterns: patterns,
-                        observed$: true
-                    })
-                }
                 resolve(new ZeroBus(config, this));
             })
         })
     }
-    
+
 
     /**
      *  You must always call the done: DoneFunc function, at the end of your cbFunc implementation, 
@@ -107,12 +97,12 @@ export class ZeroBus {
      * @returns {Observable<any>} the response msg(s) if the msg contains observed$: true stream remains open else it is completed
      * @memberof ZeroBus
      */
-    act(msgArg: any): Observable<any> {
+    act(msgArg: any, take?: number): Observable<any> {
         return Observable.create((o) => {
             this.seneca.act(
                 msgArg,
                 function (err, out) {
-                    console.log(err && err.message || out)
+                    if(debug) console.log(err && err.message || out)
                     if (err) o.error(err)
                     let observed$ = out.observed$;
                     o.next(out);
@@ -120,7 +110,43 @@ export class ZeroBus {
                         o.complete();
                     }
                 })
-        })
+        }).pipe(bufferCount(take || 1))
+    }
+
+    /**
+     * in situations where actor functions respond with observed$:true
+     * we can use findPeersWithPattern(pat) to find out how many responses 
+     * to expect and can aggregate the reults and the complete the observable
+     * 
+     * @param {*} msgArg 
+     * @returns {Observable<any[]>} 
+     * @memberof ZeroBus
+     */
+    observeActAggregate(msgArg: any): Observable<any[]> {
+        return this.findPeersWithPattern(msgArg)
+            .pipe(
+                flatMap((matches: string[]) => {
+                    let takeNum = matches.length > 0 ? matches.length : 1;
+                    return this.act(msgArg, takeNum).pipe(map(r => <any[]>r))
+                })
+            )
+    }
+
+    /**
+     * filters getPeerEndpoints result removing ports and duplicates
+     * 
+     * @returns {Observable<string[]>} 
+     * @memberof ZeroBus
+     */
+    getPeerIps(): Observable<string[]> {
+        return this.getPeerEndpoints()
+            .pipe(map((ends: string[]) => {
+                return _.uniq(ends.map(e => {
+                    if (e.indexOf(":") > 1) {
+                        return e.split(":")[0]
+                    }
+                }))
+            }))
     }
 
     /**
@@ -131,57 +157,89 @@ export class ZeroBus {
      * @memberof ZeroBus
      */
     getPeerEndpoints(): Observable<string[]> {
-        //this ends up being called locally cause it;s defined in the transport plugin we are using
-        //if you call act and the pattern exists locally it won't be broadcast to other peers
-        //FIXME: would be better if we could isolate this code and extert some controll
         return this.act({ role: 'transport', type: 'zyre', cmd: 'getPeerEndpoints' }).pipe(
             map((result) => {
-                console.log("result: ", result)
+                if(debug) console.log("peer endpoints: ", result)
                 return result.peerIps;
             }))
     }
 
     /**
+     * get latest patterns collected from all connected peers, these can be process or network peers
      * 
-     * 
-     * @param {ZbConfig} config 
-     * @param {number} takePeers will complete the observable after we have the responses we want
      * @returns {Observable<any>} 
      * @memberof ZeroBus
      */
-    getPeerPatterns(takePeers: number): Observable<any> {
-        let conf = this.config;
-        //create standalone seneca client instance which unlike our main doesn't have role:p2p, thereby insuring the request will be broadcast
-        return Observable.create(o => {
-            Seneca()
-                .use(ztrans, {
-                    zyre: {
-                        ...conf,
-                        terminalId: undefined,
-                        name: "ONCE_OFF_GET_PATTERNS_CLIENT",
-                        debug: { ztrans: true, repl: 0, print: true }
+    getPeerPatterns(): Observable<Dictionary<any[]>> {
+        return this.act({ role: 'transport', type: 'zyre', cmd: 'getPeerPatterns' }).pipe(
+            map((resp) => {
+                let result = (_.isArray(resp) && resp.length == 1)? resp[0] : resp;
+                if(debug) console.log("peer patterns: ", result)
+                return result;
+            }))
+    }
+
+    /**
+     * build a map of patrun instances for each peer containing that patterns
+     * collected from all the peers
+     * 
+     * @returns {Observable<Dictionary<any[]>>} 
+     * @memberof ZeroBus
+     */
+    getPeerPatrunMap(): Observable<Dictionary<any[]>> {
+        let peersToPatrunDict = {};
+        return this.getPeerPatterns().pipe(map((pps: Dictionary<any[]>) => {
+            Object.keys(pps).map((k: string) => {
+                let pm = Patrun({ gex: true });
+                pps[k].map((p) => pm.add(p, true));//build patrun instance for peer
+                peersToPatrunDict[k] = pm;
+            })
+            return peersToPatrunDict;
+        }))
+    }
+
+    /**
+     * returns a list of zyre peer ids for thoes peer instance that have a match for the pattern
+     * this is useful in cases such as where actor functions respond with observed$: true
+     * we then know how many messages should be in the stream cause we know how many peers
+     * have that pattern
+     * 
+     * @param {*} pattern 
+     * @returns {Observable<string[]>} 
+     * @memberof ZeroBus
+     */
+    findPeersWithPattern(pattern: any): Observable<string[]> {
+        //treat pat the same os seneca internals do
+        var pat = _.isString(pattern) ? Jsonic(pattern) : pattern
+        pat = clean(pat)
+        pat = pat || {}
+        //list peer ids that have a match
+        let peersWithMatch: string[] = [];
+        return this.getPeerPatrunMap().pipe(
+            map((peersToPatrunDict: any) => {
+                Object.keys(peersToPatrunDict).map((k: string) => {
+                    let peerPatrun = peersToPatrunDict[k]
+                    if(debug){
+                        console.log("pat run instance: ", peerPatrun)
+                        console.log("pat run list: ", peerPatrun.list())
+                        console.log("pat to find: ", pat)
+                    }
+                    if (peerPatrun.find(pat, { exact: false }) !== null) {
+                        peersWithMatch.push(k);
                     }
                 })
-                .client({ type: 'zyre' })
-                .ready(function () {
-                    this.act(
-                        { role: 'p2p', type: 'zyre', cmd: 'getPeerPatterns' },
-                        function (err, out) {
-                            console.log("getPeerPatterns: res: ", err && err.message || out)
-                            if (err) o.error(err)
-                            o.next(out)
-                            // this.close()
-                        })
-                })
-        })
-        //.pipe(take(takePeers))
-
+                return peersWithMatch;
+            })
+        )
     }
 
 
 }
 
 export declare type DoneFunc = (error: any, responseMsg: any) => void;
+export declare abstract class Dictionary<T> {
+    [id: string]: T;
+}
 
 /**
  * passed into seneca-zyre-transport where deafults are set for optional fields
