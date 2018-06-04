@@ -158,8 +158,9 @@ export class ZeroBus {
      */
     getPeerEndpoints(): Observable<string[]> {
         return this.act({ role: 'transport', type: 'zyre', cmd: 'getPeerEndpoints' }).pipe(
-            map((result) => {
-                if(debug) console.log("peer endpoints: ", result)
+            map((resp) => {
+                let result = resp[0]
+                if(debug) console.log("peer endpoints: ", result)//peer endpoints:  [ { peerIps: [ '10.50.113.218' ] } ]
                 return result.peerIps;
             }))
     }
