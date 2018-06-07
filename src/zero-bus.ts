@@ -9,7 +9,7 @@ import * as _ from "lodash";
 import { clean } from './util';
 
 
-const debug = true;
+const debug = false;
 export class ZeroBus {
 
     private constructor(private config: ZbConfig, public seneca: any) {
@@ -141,17 +141,26 @@ export class ZeroBus {
     getPeerIps(): Observable<string[]> {
         return this.getPeerEndpoints()
             .pipe(map((ends: string[]) => {
-                return _.uniq(ends.map(e => {
+                if(debug) console.log("ends: ", ends)
+                let ips = ends.map(e => {
                     if (e.indexOf(":") > 1) {
                         return e.split(":")[0]
+                    }else{
+                        return e;
                     }
-                }))
+                });
+                if(debug) console.log("ip: ", ips)
+                let uniqIps =  _.uniq(ips)
+                if(debug) console.log("uniqIps: ", uniqIps)
+                return uniqIps;
             }))
     }
 
     /**
      * contains duplicates, since we are likely to have local peer process but there ports are included,
-     * we need the dups to get the number of peers so we can take that number from the 
+     * we need the dups to get the number of peers so we can take that number from the
+     * 
+     * FIXME: this is only returning 1 ip, should return all processes on various ports 
      * 
      * @returns {Observable<string[]>} 
      * @memberof ZeroBus

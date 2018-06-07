@@ -72,6 +72,8 @@ export declare class ZeroBus {
      * contains duplicates, since we are likely to have local peer process but there ports are included,
      * we need the dups to get the number of peers so we can take that number from the
      *
+     * FIXME: this is only returning 1 ip, should return all processes on various ports
+     *
      * @returns {Observable<string[]>}
      * @memberof ZeroBus
      */
