@@ -20,7 +20,7 @@
     "rxjs": "^6.2.0",
     "seneca": "^3.6.0",
     "seneca-repl": "^1.2.0",
-    "seneca-zyre-transport": "^1.0.6"
+    "seneca-zyre-transport": "^1.0.8"
   },
   "devDependencies": {
     "@types/core-js": "^0.9.46",
